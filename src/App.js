@@ -1,6 +1,6 @@
 import React from 'react'
-import * as BooksAPI from './BooksAPI'
 import BookShelf from './BookShelf'
+import * as BooksAPI from './BooksAPI'
 import './App.css'
 
 class BooksApp extends React.Component {
@@ -43,6 +43,15 @@ class BooksApp extends React.Component {
       console.log(this.state.books);
     });
   }
+  changeShelf = (book, newShelf) => {
+    let oldShelf = this.state.books[book.shelf];
+    // console.log('oldShelf',book.title);
+    let index = oldShelf.indexOf(book);
+
+    this.setState(prevState => {books: prevState.books[oldShelf].splice(index,1)} )
+    this.setState(prevState => {books: prevState.books[newShelf].push(book)} )
+  }
+
   render() {
     return (
       <div className="app">
@@ -79,9 +88,21 @@ class BooksApp extends React.Component {
 
         {/* BookShelfs ============== */}
         <div className="list-books-content">
-            <BookShelf title="Currently Reading" books={this.state.books.currentlyReading} />
-            <BookShelf title="Want to Read" books={this.state.books.wantToRead} />
-            <BookShelf title="Read" books={this.state.books.read} />
+            <BookShelf
+              title="Currently Reading" 
+              books={this.state.books.currentlyReading}
+              handler={this.changeShelf}
+            />
+            <BookShelf
+              title="Want to Read"
+              books={this.state.books.wantToRead}
+              handler={this.changeShelf}
+            />
+            <BookShelf
+              title="Read"
+              books={this.state.books.read}
+              handler={this.changeShelf}
+            />
         </div>
         {/* BookShelfs ============== */}
 
