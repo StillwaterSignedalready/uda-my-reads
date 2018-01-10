@@ -3,18 +3,13 @@ import React from 'react'
 // import * as BooksAPI from './BooksAPI'
 
 class Book extends React.Component {
-  
-  state = {
-    sort: this.props.book.shelf
-  }
-  changeShelf = () => {
-    let newShelf = event.target.value;
-    let foo = this.props.handler;
-    this.setState({sort: newShelf});
-    foo(this.props.book, newShelf);
-  }
-  render() {
 
+  changeShelf = (newShelf) => {
+    this.setState({sort: newShelf});
+    this.props.handler(this.props.book, newShelf);
+  }
+
+  render() {
     return (
       <div>
         <div className="book">
@@ -27,8 +22,8 @@ class Book extends React.Component {
             />
             <div className="book-shelf-changer">
               <select
-                onChange={_ => {this.changeShelf()}}
-                value={this.state.sort}
+                onChange={event => {this.changeShelf(event.target.value)}}
+                value={this.props.book.shelf}
               >
                 <option value="none" disabled>Move to...</option>
                 <option value="currentlyReading">Currently Reading</option>

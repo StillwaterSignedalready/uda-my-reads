@@ -2,6 +2,8 @@ import React from 'react'
 import BookShelf from './BookShelf'
 import * as BooksAPI from './BooksAPI'
 import './App.css'
+import {Route} from 'react-router-dom'
+import {Link} from 'react-router-dom'
 
 class BooksApp extends React.Component {
   state = {
@@ -18,7 +20,10 @@ class BooksApp extends React.Component {
     },
     showSearchPage: false
   }
-
+  /**
+   * 从服务器加载数据，并分类
+   * @return {[type]} [description]
+   */
   componentDidMount(){
     BooksAPI.getAll()
     .then(data => {
@@ -40,79 +45,102 @@ class BooksApp extends React.Component {
 
         this.setState(prevState => {books: prevState.books[chosenShelf].push(book)} )
       }
-      console.log(this.state.books);
     });
   }
+  /**
+   * 对select操作进行处理 - 两种情况
+   * @param  {object} book     select映射的那本书
+   * @param  {string} newShelf option
+   */
   changeShelf = (book, newShelf) => {
-    let oldShelf = this.state.books[book.shelf];
-    // console.log('oldShelf',book.title);
+    // 用户更改了book的shelf
+    let oldShelf = this.state.books[book.shelf],
+        oldShelfName = book.shelf;
     let index = oldShelf.indexOf(book);
-
-    this.setState(prevState => {books: prevState.books[oldShelf].splice(index,1)} )
-    this.setState(prevState => {books: prevState.books[newShelf].push(book)} )
+    if(newShelf != 'none'){
+      // setState操作异步合并
+      this.setState(prevState => {books: prevState.books[oldShelfName].splice(index,1)} );
+      this.setState(prevState => {books: prevState.books[newShelf].push(book)} );
+      book.shelf = newShelf;
+    }else{
+      // 用户在select中选择了none
+      this.setState(prevState => {books: prevState.books[oldShelfName].splice(index,1)} );
+    }
   }
 
   render() {
     return (
       <div className="app">
         {/* + ============== */}
-        {this.state.showSearchPage ? (
-          <div className="search-books">
-            <div className="search-books-bar">
-              <a className="close-search" onClick={() => this.setState({ showSearchPage: false })}>Close</a>
-              <div className="search-books-input-wrapper">
-                {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
+        <Route
+          path="/search"
+          render={_ => (
+            <div className="search-books">
+              <div className="search-books-bar">
+                <a className="close-search" onClick={() => this.setState({ showSearchPage: false })}>Close</a>
+                <div className="search-books-input-wrapper">
+                  {/*
+                    NOTES: The search from BooksAPI is limited to a particular set of search terms.
+                    You can find these search terms here:
+                    https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
 
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */}
-                <input type="text" placeholder="Search by title or author"/>
+                    However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
+                    you don't find a specific author or title. Every search is limited by search terms.
+                  */}
+                  <input type="text" placeholder="Search by title or author"/>
 
+                </div>
+              </div>
+              <div className="search-books-results">
+                <ol className="books-grid"></ol>
               </div>
             </div>
-            <div className="search-books-results">
-              <ol className="books-grid"></ol>
+          )}
+        />
+        {/* ============== + */}
+        <Route
+          path="/"
+          exact
+          render={_ => (
+            <div className="list-books">
+              {/* header ============== */}
+              <div className="list-books-title">
+                <h1>MyReads</h1>
+              </div>
+              {/* ============== header */}
+
+              {/* BookShelfs ============== */}
+              <div className="list-books-content">
+                  <BookShelf
+                    title="Currently Reading" 
+                    books={this.state.books.currentlyReading}
+                    handler={this.changeShelf}
+                  />
+                  <BookShelf
+                    title="Want to Read"
+                    books={this.state.books.wantToRead}
+                    handler={this.changeShelf}
+                  />
+                  <BookShelf
+                    title="Read"
+                    books={this.state.books.read}
+                    handler={this.changeShelf}
+                  />
+              </div>
+              {/* BookShelfs ============== */}
+
+              {/* + ============== */}
+              <div className="open-search">
+                <Link
+                  to="/search"
+                >
+                  Add a book
+                </Link>
+              </div>
+              {/* ============== + */}
             </div>
-          </div>
-        ) : (
-          <div className="list-books">
-        {/* ============== + */}
-        {/* header ============== */}
-        <div className="list-books-title">
-          <h1>MyReads</h1>
-        </div>
-        {/* ============== header */}
-
-        {/* BookShelfs ============== */}
-        <div className="list-books-content">
-            <BookShelf
-              title="Currently Reading" 
-              books={this.state.books.currentlyReading}
-              handler={this.changeShelf}
-            />
-            <BookShelf
-              title="Want to Read"
-              books={this.state.books.wantToRead}
-              handler={this.changeShelf}
-            />
-            <BookShelf
-              title="Read"
-              books={this.state.books.read}
-              handler={this.changeShelf}
-            />
-        </div>
-        {/* BookShelfs ============== */}
-
-        {/* + ============== */}
-        <div className="open-search">
-          <a onClick={() => this.setState({ showSearchPage: true })}>Add a book</a>
-        </div>
-        {/* ============== + */}
-      </div>
-        )}
+          )}
+        />
       </div>
     )
   }
