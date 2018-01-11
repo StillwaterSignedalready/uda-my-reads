@@ -9,12 +9,6 @@ import {Link} from 'react-router-dom'
 
 class BooksApp extends React.Component {
   state = {
-    /**
-     * TODO: Instead of using this state variable to keep track of which page
-     * we're on, use the URL in the browser's address bar. This will ensure that
-     * users can use the browser's back and forward buttons to navigate between
-     * pages, as well as provide a good URL they can bookmark and share.
-     */
     books:{
       currentlyReading: [],
       wantToRead: [],
@@ -23,10 +17,7 @@ class BooksApp extends React.Component {
     query: '',
     searchedItems: []
   }
-  // updateQuery(query){
-  //   this.setState({query: query});
-  //   BooksAPI
-  // }
+
   clearQuery(query){
     this.setState({query: ''});
   }
@@ -73,6 +64,7 @@ class BooksApp extends React.Component {
    * @param  {string} newShelf option
    */
   changeShelf = (book, newShelf) => {
+    BooksAPI.update(book, newShelf);
     // 用户更改了book的shelf
     let oldShelf = this.state.books[book.shelf],
         oldShelfName = book.shelf;
@@ -92,6 +84,7 @@ class BooksApp extends React.Component {
       book.shelf = newShelf;
       this.setState(prevState => {books: prevState.books[newShelf].push(book)} );
     }
+    BooksAPI.update(book, newShelf);
   }
   render() {
 
