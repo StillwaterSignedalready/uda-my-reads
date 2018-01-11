@@ -1,9 +1,11 @@
 import React from 'react'
 import BookShelf from './BookShelf'
+import Book from './Book'
 import * as BooksAPI from './BooksAPI'
 import './App.css'
 import {Route} from 'react-router-dom'
 import {Link} from 'react-router-dom'
+
 
 class BooksApp extends React.Component {
   state = {
@@ -18,11 +20,18 @@ class BooksApp extends React.Component {
       wantToRead: [],
       read: [],
     },
-    showSearchPage: false
+    query: '',
+    searchedItems: []
+  }
+  // updateQuery(query){
+  //   this.setState({query: query});
+  //   BooksAPI
+  // }
+  clearQuery(query){
+    this.setState({query: ''});
   }
   /**
-   * 从服务器加载数据，并分类
-   * @return {[type]} [description]
+   * 初始化，从服务器加载数据，并分类
    */
   componentDidMount(){
     BooksAPI.getAll()
@@ -47,9 +56,20 @@ class BooksApp extends React.Component {
       }
     });
   }
+  searchBooks(query){
+    // console.log('state.query',this.state.query);
+    if(query){
+      BooksAPI.search(query)
+      .then(books => {
+        if(books instanceof Array){
+          this.setState({searchedItems: books})
+        }
+      });
+    }
+  }
   /**
-   * 对select操作进行处理 - 两种情况
-   * @param  {object} book     select映射的那本书
+   * 对select操作进行处理 - 有三种情况
+   * @param  {object} book     要调整的那本书
    * @param  {string} newShelf option
    */
   changeShelf = (book, newShelf) => {
@@ -67,8 +87,14 @@ class BooksApp extends React.Component {
       this.setState(prevState => {books: prevState.books[oldShelfName].splice(index,1)} );
     }
   }
-
+  addBook = (book, newShelf) => {
+    if(newShelf != 'none'){
+      book.shelf = newShelf;
+      this.setState(prevState => {books: prevState.books[newShelf].push(book)} );
+    }
+  }
   render() {
+
     return (
       <div className="app">
         {/* + ============== */}
@@ -77,7 +103,9 @@ class BooksApp extends React.Component {
           render={_ => (
             <div className="search-books">
               <div className="search-books-bar">
-                <a className="close-search" onClick={() => this.setState({ showSearchPage: false })}>Close</a>
+                <Link to="/" className="close-search">
+                  Close
+                </Link>
                 <div className="search-books-input-wrapper">
                   {/*
                     NOTES: The search from BooksAPI is limited to a particular set of search terms.
@@ -87,12 +115,29 @@ class BooksApp extends React.Component {
                     However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
                     you don't find a specific author or title. Every search is limited by search terms.
                   */}
-                  <input type="text" placeholder="Search by title or author"/>
-
+                  <input
+                    type="text"
+                    placeholder="Search by title or author"
+                    onPaste={event => {
+                      this.searchBooks(event.target.value);
+                    }}
+                    onChange={event => {
+                      this.searchBooks(event.target.value);
+                    }}
+                  />
                 </div>
               </div>
               <div className="search-books-results">
-                <ol className="books-grid"></ol>
+                <ol className="books-grid">
+                  {this.state.searchedItems.map(book => 
+                    <li key={book.id}>
+                      <Book
+                        handler={this.addBook}
+                        book={book}
+                      />
+                    </li>
+                  )}
+                </ol>
               </div>
             </div>
           )}
@@ -131,9 +176,7 @@ class BooksApp extends React.Component {
 
               {/* + ============== */}
               <div className="open-search">
-                <Link
-                  to="/search"
-                >
+                <Link to="/search">
                   Add a book
                 </Link>
               </div>

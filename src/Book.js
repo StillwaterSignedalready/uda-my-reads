@@ -10,6 +10,21 @@ class Book extends React.Component {
   }
 
   render() {
+    // 有的书数据不全，这里设置了默认数据：封面-mockingBird
+    // authors默认为空集, shelf默认为'';
+    let imageUrl = 'http://books.google.com/books/content?id=PGR2AwAAQBAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73-GnPVEyb7MOCxDzOYF1PTQRuf6nCss9LMNOSWBpxBrz8Pm2_mFtWMMg_Y1dx92HT7cUoQBeSWjs3oEztBVhUeDFQX6-tWlWz1-feexS0mlJPjotcwFqAg6hBYDXuK_bkyHD-y&source=gbs_api',
+        authors = [],
+        shelf = 'none';
+    if(this.props.book.imageLinks){
+      imageUrl = this.props.book.imageLinks.thumbnail
+    }
+    if(this.props.book.authors){
+      authors = this.props.book.authors;
+    }
+    if(this.props.book.shelf){
+      shelf = this.props.book.shelf;
+    }
+
     return (
       <div>
         <div className="book">
@@ -18,12 +33,12 @@ class Book extends React.Component {
               style={{
                 width: 128,
                 height: 188,
-                backgroundImage: `url(${this.props.book.imageLinks.thumbnail})` }} 
+                backgroundImage: `url(${imageUrl})` }} 
             />
             <div className="book-shelf-changer">
               <select
                 onChange={event => {this.changeShelf(event.target.value)}}
-                value={this.props.book.shelf}
+                value={shelf}
               >
                 <option value="none" disabled>Move to...</option>
                 <option value="currentlyReading">Currently Reading</option>
@@ -35,7 +50,7 @@ class Book extends React.Component {
           </div>
           <div className="book-title"> {this.props.book.title} </div>
           <div className="book-authors">
-            {this.props.book.authors.map(author => 
+            {authors.map(author => 
               <span key={author}>{author}</span>
             ) }
           </div>
