@@ -5,7 +5,6 @@ import React from 'react'
 class Book extends React.Component {
 
   changeShelf = (newShelf) => {
-    this.setState({sort: newShelf});
     this.props.handler(this.props.book, newShelf);
   }
 
@@ -21,10 +20,10 @@ class Book extends React.Component {
     if(this.props.book.authors){
       authors = this.props.book.authors;
     }
-    if(this.props.book.shelf){
+    if(this.props.book.shelf){ // 如果book已存在shelf
       shelf = this.props.book.shelf;
     }
-
+    
     return (
       <div>
         <div className="book">
